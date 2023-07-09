@@ -42,8 +42,8 @@ Projeto desenvolvido durante a matéria MATA54 - Estrutura de Dados II da Univer
 
 ## ⚙️ Funcionalidades
 
-- [x] Compressão de Dados com Huffman Estático
-- [x] Descompressão de Dados com Huffman Estático
+- [x] Compressão de Dados com LZW
+- [x] Descompressão de Dados com LZW
 
 ---
 
@@ -59,20 +59,20 @@ $ git clone https://github.com/caiovinisl/compressao-de-dados.git
 # Acesse a pasta do projeto no terminal/cmd
 $ cd compressao-de-dados
 
-# Acesse a pasta com os programas e insira algum arquivo de texto, código fonte ou imagem.
+# Acesse a pasta com os programas e insira algum arquivo de texto, código fonte ou imagem no diretório '/entradas'.
 # A primeira linha conterá o nome do arquivo. Ex: input.txt
 
 # Compile o código com o método de hashing desejado
-$ g++ compressaoHuffmanEstatico.cpp -std=c++17 -o compressaoHuffmanEstatico
+$ g++ compressaoLZW.cpp -std=c++17 -o compressaoLZW
 ou
-$ g++ descompressaoHuffmanEstatico.cpp -std=c++17 -o descompressaoHuffmanEstatico
+$ g++ descompressaoLZW.cpp -std=c++17 -o descompressaoLZW
 
 # Execute o código
-$ compressaoHuffmanEstatico.exe
+$ compressaoLZW.exe
 ou
-$ descompressaoHuffmanEstatico.exe
+$ descompressaoLZW.exe
 
-# O código será executado e retornará o arquivo comprimido. Ex: input-compressed.txt
+# O código será executado e retornará o arquivo comprimido ou descompremido no diretório '/saidas'. Ex: input-compressed.txt
 
 ```
 
