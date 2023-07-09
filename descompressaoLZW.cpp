@@ -27,38 +27,51 @@ void decompress(const std::string& inputFile, const std::string& outputFile) {
     }
 
     int code;
-    std::vector<std::string> decompressedData;
-    std::string previous;
-    char ch;
+    std::vector<int> compressedData;
+    std::string current;
 
     while (inFile.read(reinterpret_cast<char*>(&code), sizeof(code))) {
-        std::string current;
+        compressedData.push_back(code);
+    }
 
-        if (code < dictionary.size()) {
-            // O código está no dicionário
-            current = dictionary[code];
+    std::string previous = dictionary[compressedData[0]];
+    std::string output = previous;
+    
+    for (int i = 1; i < compressedData.size(); ++i) {
+        int currentCode = compressedData[i];
+        std::string entry;
+        
+        if (currentCode < dictionary.size()) {
+            entry = dictionary[currentCode];
+        } else if (currentCode == dictionary.size()) {
+            entry = previous + previous[0];
         } else {
-            // Código inválido
-            current = previous + previous[0];
+            std::cerr << "Erro: Código inválido encontrado durante a descompressão.\n";
+            return;
         }
-
-        decompressedData.push_back(current);
-
-        // Adiciona a nova entrada no dicionário
-        dictionary.push_back(previous + current[0]);
-
-        previous = current;
+        
+        output += entry;
+        
+        dictionary.push_back(previous + entry[0]);
+        previous = entry;
     }
 
-    // Escreve os dados descomprimidos no arquivo de saída
-    for (const std::string& data : decompressedData) {
-        for (const char& ch : data) {
-            outFile.put(ch);
-        }
-    }
+    outFile.write(output.c_str(), output.length());
 
     inFile.close();
     outFile.close();
+
+    // Cálculo da taxa de compressão
+    double compressedSize = fs::file_size(inputFile);
+    double uncompressedSize = fs::file_size(outputFile);
+    double compressionRatio = uncompressedSize / compressedSize;
+    double entropy = 8.0;  // Estimativa de entropia para sequências de 8 bits
+    double compressionRatioPercentage = (1.0 - compressionRatio) * 100.0;
+    double entropyPercentage = (1.0 - (entropy / 8.0)) * 100.0;
+
+    std::cout << "Descompressao concluida com sucesso!\n";
+    std::cout << "Taxa de compressao: " << compressionRatioPercentage << "%\n";
+    std::cout << "Entropia estimada: " << entropyPercentage << "%\n";
 }
 
 int main() {
@@ -67,15 +80,18 @@ int main() {
     std::cin >> compressedFilename;
 
     std::string inputFile = "entradas/" + compressedFilename;
-    std::string decompressedFilename = "saidas/" + compressedFilename.substr(0, compressedFilename.find_last_of('.')) + "-decompressed.txt";
+    std::string originalFilename = compressedFilename.substr(0, compressedFilename.find_last_of('-'));
+
+    // Obter a extensão do arquivo original
+    std::string extension = fs::path(originalFilename).extension().string();
+
+    std::string decompressedFilename = "saidas/" + originalFilename + "-decompressed" + extension;
 
     // Cria o diretório de saída se não existir
     fs::create_directory("saidas");
 
     // Descomprime o arquivo comprimido
     decompress(inputFile, decompressedFilename);
-
-    std::cout << "Descompressao concluida com sucesso!\n";
 
     return 0;
 }

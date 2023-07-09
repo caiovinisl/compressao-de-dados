@@ -2,6 +2,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <vector>
+#include <cmath>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -62,6 +63,18 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
 
     inFile.close();
     outFile.close();
+
+    // Cálculo da taxa de compressão
+    double uncompressedSize = fs::file_size(inputFile);
+    double compressedSize = fs::file_size(outputFile);
+    double compressionRatio = compressedSize / uncompressedSize;
+    double entropy = 8.0;  // Estimativa de entropia para sequências de 8 bits
+    double compressionRatioPercentage = (1.0 - compressionRatio) * 100.0;
+    double entropyPercentage = (1.0 - (entropy / 8.0)) * 100.0;
+
+    std::cout << "Compressao concluida com sucesso!\n";
+    std::cout << "Taxa de compressao: " << compressionRatioPercentage << "%\n";
+    std::cout << "Entropia estimada: " << entropyPercentage << "%\n";
 }
 
 int main() {
@@ -70,15 +83,13 @@ int main() {
     std::cin >> inputFilename;
 
     std::string inputFile = "entradas/" + inputFilename;
-    std::string compressedFilename = "saidas/" + inputFilename + "-compressed.txt";
+    std::string compressedFilename = "saidas/" + inputFilename + "-compressed.bin";
 
     // Cria o diretório de saída se não existir
     fs::create_directory("saidas");
 
     // Comprime o arquivo de entrada
     compress(inputFile, compressedFilename);
-
-    std::cout << "Compressao concluida com sucesso!\n";
 
     return 0;
 }
