@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <filesystem>
+#include <cstdint>
 
 namespace fs = std::filesystem;
 
@@ -22,12 +23,12 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
     std::ifstream inFile(inputFile, std::ios::binary);
     std::ofstream outFile(outputFile, std::ios::binary);
 
-    if (!inFile.is_open()) {
+    if (!inFile) {
         std::cerr << "Erro ao abrir o arquivo de entrada.\n";
         return;
     }
 
-    if (!outFile.is_open()) {
+    if (!outFile) {
         std::cerr << "Erro ao abrir o arquivo de saída.\n";
         return;
     }
@@ -41,7 +42,7 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
 
     std::string current;
     char ch;
-    std::vector<int> compressedData;
+    std::vector<std::int32_t> compressedData;
     std::unordered_map<int, int> frequencyMap;
 
     while (inFile.get(ch)) {
@@ -72,9 +73,7 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
     }
 
     // Escreve os dados comprimidos no arquivo de saída
-    for (const int& code : compressedData) {
-        outFile.write(reinterpret_cast<const char*>(&code), sizeof(code));
-    }
+    outFile.write(reinterpret_cast<const char*>(compressedData.data()), compressedData.size() * sizeof(std::int32_t));
 
     inFile.close();
     outFile.close();
@@ -84,7 +83,7 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
     double compressedSize = fs::file_size(outputFile);
     double compressionRatio = compressedSize / uncompressedSize;
     double entropy = calculateEntropy(frequencyMap, compressedData.size());
-    double compressionRatioPercentage = (1.0 - compressionRatio) * 100.0;
+    double compressionRatioPercentage = (compressionRatio < 1.0) ? (1.0 - compressionRatio) * 100.0 : 0.0;
     double entropyPercentage = (1.0 - (entropy / 8.0)) * 100.0;
 
     std::cout << "Compressao concluida com sucesso!\n";
