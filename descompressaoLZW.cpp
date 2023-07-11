@@ -1,9 +1,21 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <unordered_map>
+#include <cmath>
 #include <filesystem>
 
 namespace fs = std::filesystem;
+
+// Função para calcular a entropia de um conjunto de dados
+double calculateEntropy(const std::unordered_map<std::string, int>& frequencyMap, int dataSize) {
+    double entropy = 0.0;
+    for (const auto& pair : frequencyMap) {
+        double probability = static_cast<double>(pair.second) / dataSize;
+        entropy -= probability * log2(probability);
+    }
+    return entropy;
+}
 
 // Função para descomprimir um arquivo usando o algoritmo LZW
 void decompress(const std::string& inputFile, const std::string& outputFile) {
@@ -34,38 +46,48 @@ void decompress(const std::string& inputFile, const std::string& outputFile) {
         compressedData.push_back(code);
     }
 
+    inFile.close();
+
+    // Cálculo da taxa de compressão
+    double compressedSize = fs::file_size(inputFile);
+    double uncompressedSize = 0.0;
+    std::unordered_map<std::string, int> frequencyMap;
+
     std::string previous = dictionary[compressedData[0]];
-    std::string output = previous;
-    
+    outFile.write(previous.c_str(), previous.length());
+    uncompressedSize += previous.length();
+
     for (int i = 1; i < compressedData.size(); ++i) {
         int currentCode = compressedData[i];
         std::string entry;
-        
+
         if (currentCode < dictionary.size()) {
             entry = dictionary[currentCode];
         } else if (currentCode == dictionary.size()) {
             entry = previous + previous[0];
         } else {
-            std::cerr << "Erro: Código inválido encontrado durante a descompressão.\n";
+            std::cerr << "Erro: Codigo invalido encontrado durante a descompressao.\n";
             return;
         }
-        
-        output += entry;
+
+        outFile.write(entry.c_str(), entry.length());
+        uncompressedSize += entry.length();
+
+        // Atualiza a contagem de frequência
+        frequencyMap[entry]++;
         
         dictionary.push_back(previous + entry[0]);
         previous = entry;
     }
 
-    outFile.write(output.c_str(), output.length());
-
-    inFile.close();
     outFile.close();
 
-    // Cálculo da taxa de compressão
-    double compressedSize = fs::file_size(inputFile);
-    double uncompressedSize = fs::file_size(outputFile);
+    // Calcula a entropia
+    double dataSize = uncompressedSize / sizeof(char);
+    double entropy = calculateEntropy(frequencyMap, dataSize);
+
+    // Cálculo da taxa de compressão e entropia estimada
     double compressionRatio = uncompressedSize / compressedSize;
-    double entropy = 8.0;  // Estimativa de entropia para sequências de 8 bits
     double compressionRatioPercentage = (1.0 - compressionRatio) * 100.0;
     double entropyPercentage = (1.0 - (entropy / 8.0)) * 100.0;
 

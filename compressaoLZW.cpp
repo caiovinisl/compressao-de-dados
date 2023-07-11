@@ -7,6 +7,16 @@
 
 namespace fs = std::filesystem;
 
+// Função para calcular a entropia de um conjunto de dados
+double calculateEntropy(const std::unordered_map<int, int>& frequencyMap, int dataSize) {
+    double entropy = 0.0;
+    for (const auto& pair : frequencyMap) {
+        double probability = static_cast<double>(pair.second) / dataSize;
+        entropy -= probability * log2(probability);
+    }
+    return entropy;
+}
+
 // Função para comprimir um arquivo usando o algoritmo LZW
 void compress(const std::string& inputFile, const std::string& outputFile) {
     std::ifstream inFile(inputFile, std::ios::binary);
@@ -32,6 +42,7 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
     std::string current;
     char ch;
     std::vector<int> compressedData;
+    std::unordered_map<int, int> frequencyMap;
 
     while (inFile.get(ch)) {
         std::string next = current + ch;
@@ -42,6 +53,9 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
         } else {
             // O próximo caractere não existe no dicionário
             compressedData.push_back(dictionary[current]);
+
+            // Atualiza a contagem de frequência
+            frequencyMap[dictionary[current]]++;
 
             // Adiciona a nova entrada no dicionário
             dictionary[next] = dictionary.size();
@@ -54,6 +68,7 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
     // Trata o último caractere
     if (!current.empty()) {
         compressedData.push_back(dictionary[current]);
+        frequencyMap[dictionary[current]]++;
     }
 
     // Escreve os dados comprimidos no arquivo de saída
@@ -68,7 +83,7 @@ void compress(const std::string& inputFile, const std::string& outputFile) {
     double uncompressedSize = fs::file_size(inputFile);
     double compressedSize = fs::file_size(outputFile);
     double compressionRatio = compressedSize / uncompressedSize;
-    double entropy = 8.0;  // Estimativa de entropia para sequências de 8 bits
+    double entropy = calculateEntropy(frequencyMap, compressedData.size());
     double compressionRatioPercentage = (1.0 - compressionRatio) * 100.0;
     double entropyPercentage = (1.0 - (entropy / 8.0)) * 100.0;
 
