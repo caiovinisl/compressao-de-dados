@@ -60,19 +60,20 @@ $ git clone https://github.com/caiovinisl/compressao-de-dados.git
 $ cd compressao-de-dados
 
 # Acesse a pasta com os programas e insira algum arquivo de texto, código fonte ou imagem no diretório '/entradas'.
-# A primeira linha conterá o nome do arquivo. Ex: input.txt
 
-# Compile o código com o método de hashing desejado
+# Compile o código de compressão ou descompressão
 $ g++ compressaoLZW.cpp -std=c++17 -o compressaoLZW
 ou
 $ g++ descompressaoLZW.cpp -std=c++17 -o descompressaoLZW
 
 # Execute o código
+# A primeira linha conterá o nome do arquivo. Ex: input.txt
+# Na descompressão o arquivo tem que estar na extensão .bin
 $ compressaoLZW.exe
 ou
 $ descompressaoLZW.exe
 
-# O código será executado e retornará o arquivo comprimido ou descompremido no diretório '/saidas'. Ex: input-compressed.txt
+# O código será executado e retornará o arquivo comprimido ou descompremido no diretório '/saidas'. Ex: input-compressed.bin
 
 ```
 
